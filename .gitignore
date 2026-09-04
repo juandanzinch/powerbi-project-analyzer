@@ -35,10 +35,8 @@ wheels/
 
 # Generated outputs (from main.py - recreated on each run)
 reports/
-ai_analysis_output/
 
 # Temporary files
 *.tmp
 *.temp
 .DS_Store
-

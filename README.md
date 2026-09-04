@@ -1,11 +1,10 @@
 # Power BI Project Analyzer
 
 > **Modular semantic model analysis for Power BI projects (.pbip)**  
-> Extract and classify Power BI tables, relationships, measures, and pages into structured JSON outputs with comprehensive Markdown documentation, visualizations, and optional AI enrichment.
+> Extract and classify Power BI tables, relationships, measures, and pages into structured JSON outputs with comprehensive Markdown documentation and visualizations.
 
 ![Python Version](https://img.shields.io/badge/python-3.6%2B-blue)
 ![Visualizations](https://img.shields.io/badge/Visualizations-5%20types-brightgreen)
-![AI Integration](https://img.shields.io/badge/AI%20Integration-Ollama-orange)
 
 ---
 
@@ -25,7 +24,6 @@
 - **📝 Dual Documentation**:
   - `TECHNICAL_DOCUMENTATION.md` - Concise executive summary (5-15 pages)
   - `powerbi_analysis_*.md` - Comprehensive analysis with charts (20-50 pages)
-- **🤖 Optional AI Enhancement**: Auto-classify tables and measure descriptions with Ollama
 - **Zero Core Dependencies**: Pure Python for all core analysis
 
 ---
@@ -44,21 +42,6 @@ pip install -r requirements.txt
 
 ```bash
 python -c "import matplotlib, seaborn, networkx; print('✅ Core dependencies OK')"
-```
-
-### 3. Optional: AI Integration (Ollama)
-
-For AI-enhanced table classification and measure descriptions:
-
-```bash
-# Install Ollama from https://ollama.ai
-ollama pull phi3:14b          # Download model (recommended)
-# OR
-ollama pull qwen2:14b         # Alternative model
-
-# In another terminal, start Ollama server
-ollama serve
-# Ollama will listen on http://localhost:11434
 ```
 
 ---
@@ -166,79 +149,6 @@ For more details, see [DOCUMENTATION_STRUCTURE.md](DOCUMENTATION_STRUCTURE.md).
 
 ---
 
-## 🤖 AI Enhancement (Optional)
-
-### Prerequisites
-
-1. Ollama running: `ollama serve` (in separate terminal)
-2. Model downloaded: `ollama pull phi3:14b`
-
-### Generate AI-Enriched Documentation
-
-**Option A: Auto-detect Project**
-```bash
-python scripts/ollama_generator.py
-```
-Uses the first project found in `reports/`
-
-**Option B: Specific Project**
-```bash
-python scripts/ollama_generator.py Americas
-```
-
-**Option C: Custom Model & Settings**
-```bash
-python scripts/ollama_generator.py Americas phi3:14b 0.1
-```
-
-**Option D: Full Control**
-```bash
-python scripts/ollama_generator.py <project> <model> <temperature> <max_tokens>
-```
-
-### Parameters
-
-| Parameter | Options | Default | Example |
-|-----------|---------|---------|---------|
-| `project` | Project name (partial) | First project | `Americas` |
-| `model` | phi3:14b, qwen2:14b, llama3.1 | phi3:14b | `qwen2:14b` |
-| `temperature` | 0.0-1.0 | 0.1 | `0.1` (deterministic) |
-| `max_tokens` | Integer | 2000 | `4000` |
-
-### What AI Does
-
-1. **Classify Tables**: FACT, DIMENSION, BRIDGE, CALCULATION, PARAMETER
-2. **Describe Measures**: Aggregation type, complexity assessment
-3. **Generate Documentation**: AI-powered markdown with insights
-
-### Output
-
-- `output_ai/tables_enriched.json` - Tables with AI annotations
-- `output_ai/AI_DOCUMENTATION.md` - AI-generated analysis
-
-### Troubleshooting AI
-
-**Problem:** "Cannot connect to Ollama"
-```bash
-# Terminal 1: Start Ollama server
-ollama serve
-
-# Terminal 2: Run analysis
-python scripts/ollama_generator.py
-```
-
-**Problem:** "Model not found"
-```bash
-ollama pull phi3:14b
-```
-
-**Problem:** Slow performance
-- Use faster model: `phi3:3.8b`
-- Lower temperature: `0.1` (faster than 0.5)
-- Check status: `ollama ps`
-
----
-
 ## 📖 Documentation Reference
 
 Three comprehensive markdown documents explain the project:
@@ -270,14 +180,9 @@ python main.py ../RecursosFuente/OnlineBaseline.pbip
 # Output: reports/OnlineBaseline/
 ```
 
-### Example 2: Batch Process All Projects with AI Enhancement
+### Example 2: Batch Process All Projects
 ```bash
-# Generate standard reports
 python main.py ../RecursosFuente/
-
-# Then enhance with AI (terminal 2, Ollama running)
-python scripts/ollama_generator.py Americas
-python scripts/ollama_generator.py "Consolidated P&L"
 ```
 
 ### Example 3: Windows Batch Wrapper
@@ -320,8 +225,6 @@ pip install matplotlib>=3.7.0 seaborn>=0.12.0
 - **Python:** 3.6+
 - **Core:** json, re, pathlib, collections (built-in)
 - **Visualization:** matplotlib, seaborn, networkx
-- **Optional AI:** Ollama (local instance)
-
 See `requirements.txt` for complete list.
 
 ---

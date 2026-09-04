@@ -32,9 +32,7 @@ powerbi-project/
 │   ├── schema_distribution.py      # Table type donut chart
 │   └── __init__.py
 │
-├── scripts/                        # Utility & AI scripts
-│   ├── ollama_client.py            # Ollama HTTP client
-│   ├── ollama_generator.py         # AI-enhanced documentation
+├── scripts/                        # Utility scripts
 │   ├── check_classification.py     # Validate classifications
 │   ├── check_types.py              # Data type validation
 │   ├── inspect_tmdl.py             # TMDL file inspection
@@ -112,13 +110,6 @@ RecursosFuente/ (.pbip files)
         ├── complexity_heatmap.py       → PNG
         ├── schema_distribution.py      → PNG
         └── datatype_distribution.py    → PNG
-            ↓
-        [OPTIONAL STEP 5: AI ENHANCEMENT]
-        └── ollama_generator.py
-            ├── Classify tables with AI
-            ├── Describe measures
-            └── Generate AI_DOCUMENTATION.md
-            ↓
         [OUTPUT] reports/ProjectName/
         ├── data/ (JSON files)
         ├── reports/ (Markdown docs)
@@ -197,15 +188,6 @@ Handles special characters in paths.
   - Recommendations
   - Penalties and bonuses breakdown
 
-### AI Enhancement (Optional)
-- **ollama_generator.py**: Orchestrates AI enrichment
-  - Classifies tables using LLM
-  - Generates measure descriptions
-  - Creates AI-powered documentation
-- **ollama_client.py**: HTTP client for local Ollama instance
-
----
-
 ## Data Structures
 
 ### classifications.json (Parser Output)
@@ -270,14 +252,6 @@ Handles special characters in paths.
 5. Visualizers create PNG charts
 6. Output organized in `reports/ProjectName/`
 
-### With AI Enhancement (Optional)
-1. Run basic pipeline first
-2. Start Ollama: `ollama serve`
-3. Run: `python scripts/ollama_generator.py <project>`
-4. AI enriches JSON and generates additional documentation
-
----
-
 ## Dependencies
 
 ### Core (Built-in Python)
@@ -290,7 +264,6 @@ Handles special characters in paths.
 - `pyyaml` (for configuration)
 
 ### Optional
-- `ollama` (AI enrichment)
 - `plotly`, `pyvis` (interactive visualizations)
 
 ---
@@ -313,13 +286,6 @@ Handles special characters in paths.
 - ~1-2 seconds per visualization type
 - All visualizers run in parallel when possible
 
-### AI Enhancement (Optional)
-- First run: ~30-60 seconds (model loading)
-- Subsequent runs: ~20-40 seconds (model warm)
-- Depends on: model size, temperature setting, response length
-
----
-
 ## Recent Updates
 
 ### ✅ Phase 5 Optimization
@@ -332,11 +298,6 @@ Handles special characters in paths.
 - Added support for processing entire folders recursively
 - Each project gets separate `reports/ProjectName/` subfolder
 - Organized output by data, reports, graphs
-
-### ✅ AI Integration
-- Ollama client for local LLM integration
-- AI table classification and measure descriptions
-- Enriched JSON with AI annotations
 
 ### 📋 Documentation
 - Three main documentation files (README, ARCHITECTURE, DOCUMENTATION_STRUCTURE)
@@ -351,7 +312,7 @@ Handles special characters in paths.
 2. **JSON Data Contracts**: Each parser outputs standard JSON structure
 3. **Output Organization**: Reports organized by project name
 4. **Batch-Friendly**: Can process multiple projects with single command
-5. **Optional Enhancements**: AI and visualization are optional but integrated
+5. **Optional Enhancements**: Visualization features are optional and integrated
 
 ---
 
