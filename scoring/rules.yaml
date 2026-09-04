@@ -1,0 +1,281 @@
+# ============================================================
+# Power BI Framework — Scoring Rules
+# Versión: 1.0.0
+# Modificar umbrales aquí sin tocar el código fuente
+# ============================================================
+
+scoring:
+
+  # Pesos de cada dimensión sobre el score global (deben sumar 1.0)
+  weights:
+    model_health:    0.35
+    dax_quality:     0.25
+    report_design:   0.25
+    governance:      0.15
+
+  # --------------------------------------------------------
+  # Dimensión 1 — Model Health
+  # Fuente: tables.json + relationships.json
+  # --------------------------------------------------------
+  model:
+
+    penalties:
+      no_relationships:
+        condition: "total_tables > 1 AND total_relationships == 0"
+        value: 35
+        label: "No relationships defined between tables"
+
+      isolated_tables:
+        per_table_ratio: 30      # ratio * 30, capped at max
+        max: 25
+        exclude_types: ["PARAMETER", "CALCULATION"]
+        label: "Unconnected tables (excluding intentional)"
+
+      no_fact_table:
+        condition: "total_relationships > 0 AND fact_count == 0"
+        value: 20
+        label: "No fact table identified"
+
+      multiple_facts_no_shared_dims:
+        condition: "fact_count >= 2 AND shared_dimensions == 0"
+        value: 10
+        label: "Multiple fact tables without shared dimensions"
+
+      many_to_many:
+        per_relationship: 5
+        max: 15
+        label: "Many-to-many relationship"
+
+      bidirectional:
+        per_relationship: 3
+        max: 10
+        label: "Bidirectional cross-filter relationship"
+
+      inactive_relationships:
+        per_relationship: 2
+        max: 8
+        label: "Inactive relationship without documented USERELATIONSHIP"
+
+      string_keys:
+        per_table: 3
+        max: 15
+        label: "String-typed relationship key (should be integer surrogate)"
+
+      calculated_columns_in_facts:
+        per_column: 2
+        max: 10
+        label: "Calculated column in fact table"
+
+      low_confidence_classification:
+        threshold: 0.60
+        per_table: 2
+        max: 10
+        exclude_types: ["PARAMETER", "CALCULATION"]
+        label: "Ambiguous table classification (naming convention issue)"
+
+    bonuses:
+      clean_dimensional_model:
+        condition: "fact_count > 0 AND dimension_count > 0 AND total_relationships > 0"
+        value: 5
+        label: "Well-structured dimensional model"
+
+      bridge_tables_present:
+        per_table: 2
+        max: 5
+        label: "Bridge tables used for M2M resolution"
+
+      high_classification_confidence:
+        threshold: 0.85
+        value: 5
+        label: "High classification confidence across all tables"
+
+    schema_ceilings:
+      STAR:         100
+      GALAXY:        95
+      SNOWFLAKE:     90
+      DIMENSIONAL:   85
+      FLAT:          70
+      DISCONNECTED:  60
+      UNKNOWN:       80
+
+  # --------------------------------------------------------
+  # Dimensión 2 — DAX Quality
+  # Fuente: measures.json
+  # --------------------------------------------------------
+  dax:
+
+    penalties:
+      filter_over_full_table:
+        per_measure: 8
+        max: 20
+        pattern: "FILTER\\s*\\(\\s*(?!VALUES\\s*\\()(?:'?[A-Za-z_][A-Za-z0-9_]*'?)\\s*,"
+        label: "FILTER() over full table (use column filter instead)"
+
+      no_var_in_complex_measure:
+        complexity_threshold: 3    # expresiones repetidas detectadas
+        per_measure: 5
+        max: 15
+        label: "Complex measure without VAR (risk of double evaluation)"
+
+      nested_iterators:
+        pattern: "(SUMX|AVERAGEX|MAXX|MINX).*\\1"
+        per_measure: 6
+        max: 12
+        label: "Nested iterator functions (SUMX inside SUMX)"
+
+      measure_without_format:
+        per_measure: 2
+        max: 10
+        label: "Measure without explicit format string"
+
+      duplicate_logic:
+        similarity_threshold: 0.85  # similitud entre expresiones
+        per_pair: 4
+        max: 12
+        label: "Duplicate measure logic (consolidate into base measure)"
+
+      measures_outside_dedicated_table:
+        per_measure: 3
+        max: 10
+        label: "Measure defined outside _Measures table"
+
+    bonuses:
+      all_measures_in_dedicated_table:
+        condition: "measures_outside_table == 0"
+        value: 8
+        label: "All measures organized in dedicated table"
+
+      var_usage_rate:
+        threshold: 0.70           # 70%+ de medidas complejas usan VAR
+        value: 5
+        label: "Good VAR adoption in complex measures"
+
+    thresholds:
+      complex_measure_min_lines: 5   # Medida se considera compleja si tiene 5+ líneas
+      max_measure_nesting_depth: 4   # Más de 4 niveles de referencia entre medidas
+
+  # --------------------------------------------------------
+  # Dimensión 3 — Report Design
+  # Fuente: pages.json
+  # --------------------------------------------------------
+  report:
+
+    penalties:
+      visuals_per_page:
+        warning_threshold: 8
+        critical_threshold: 12
+        per_visual_over_warning: 2
+        max: 15
+        label: "Excessive visuals per page"
+
+      slicers_on_fact_columns:
+        per_slicer: 5
+        max: 15
+        label: "Slicer bound to fact table column (use dimension instead)"
+
+      hidden_visuals:
+        per_visual: 3
+        max: 9
+        label: "Hidden visual still consuming query budget"
+
+      duplicate_measures_across_visuals:
+        condition: "same_heavy_measure_used_in > 5 visuals on same page"
+        per_occurrence: 3
+        max: 9
+        label: "Heavy measure repeated across many visuals on same page"
+
+      no_drillthrough_pages:
+        condition: "report_has_detail_tables AND no_drillthrough_defined"
+        value: 8
+        label: "Detail tables shown inline (use drillthrough instead)"
+
+    bonuses:
+      summary_plus_drillthrough_pattern:
+        condition: "has_summary_page AND has_drillthrough_page"
+        value: 8
+        label: "Summary + drillthrough navigation pattern"
+
+      slicers_from_dimensions_only:
+        condition: "fact_column_slicers == 0"
+        value: 5
+        label: "All slicers bound to dimension columns"
+
+    thresholds:
+      max_visuals_per_page: 10
+      max_pages_per_report: 15
+      heavy_measure_visual_threshold: 5
+
+  # --------------------------------------------------------
+  # Dimensión 4 — Governance
+  # Fuente: roles (desde modelo) + naming conventions
+  # --------------------------------------------------------
+  governance:
+
+    penalties:
+      no_rls_defined:
+        condition: "report_has_sensitive_data AND roles_count == 0"
+        value: 20
+        label: "No RLS defined on model with potentially sensitive data"
+
+      static_rls_overuse:
+        threshold: 5              # más de 5 roles estáticos
+        per_role_over_threshold: 3
+        max: 12
+        label: "Too many static RLS roles (consider dynamic RLS)"
+
+      rls_filter_on_string_column:
+        per_role: 4
+        max: 12
+        label: "RLS filter on string column (use integer key instead)"
+
+      naming_violations:
+        per_table: 2
+        max: 10
+        label: "Table name does not follow fact_/dim_/bridge_ convention"
+
+      no_description_on_measures:
+        ratio_threshold: 0.50     # más del 50% sin descripción
+        value: 8
+        label: "Most measures lack description (documentation gap)"
+
+      orphan_report_no_owner:
+        value: 5
+        label: "Report has no identified owner in metadata"
+
+    bonuses:
+      dynamic_rls_implemented:
+        condition: "rls_uses_userprincipalname"
+        value: 10
+        label: "Dynamic RLS implemented with USERPRINCIPALNAME()"
+
+      consistent_naming:
+        condition: "naming_violations == 0"
+        value: 8
+        label: "All tables follow naming convention"
+
+    naming_conventions:
+      fact_prefixes:    ["fact_", "fct_"]
+      dim_prefixes:     ["dim_", "d_"]
+      bridge_prefixes:  ["bridge_", "brdg_", "map_"]
+      calc_prefixes:    ["_", "calc_"]
+      param_prefixes:   ["param_", "p_", "slicer_"]
+      forbidden_names:  ["Table", "Sheet1", "Query1", "data", "Data"]
+
+# ============================================================
+# Grade Thresholds (Global Score → Letter Grade)
+# ============================================================
+grade_thresholds:
+  A: 85
+  B: 75
+  C: 60
+  D: 45
+  F: 0
+
+# ============================================================
+# Metadata
+# ============================================================
+metadata:
+  version: "1.0.0"
+  created_date: "2026-05-20"
+  author: "Power BI Analysis Framework"
+  description: "Comprehensive scoring rules for Power BI semantic models, reports, and governance"

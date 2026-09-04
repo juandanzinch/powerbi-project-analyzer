@@ -1,0 +1,30 @@
+# Power BI Project EDA Tool - Dependencies
+
+# Core dependencies
+python-dateutil>=2.8.2
+
+# Data processing
+pandas>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+networkx>=3.1
+pyvis>=0.3.0
+plotly>=5.17.0
+pillow>=10.0.0
+scipy=1.18.0
+# Graph visualization (alternative to pygraphviz)
+pydot>=1.4.2
+
+# Markdown generation
+markdown>=3.4.0
+
+# CLI
+click>=8.1.0
+rich>=13.0.0
+tqdm>=4.65.0
+
+# Utilities
+colorama>=0.4.6
+pyyaml>=6.0
